@@ -111,3 +111,21 @@ jobs:
               Write-Host "[$(Get-Date)] RDP Active - Use Ctrl+C in workflow to terminate"
               Start-Sleep -Seconds 300
           }
+      - name: Auto-Restart Workflow
+        if: always()
+        env:
+          GH_PAT: ${{ secrets.GH_PAT }}
+        run: |
+          Write-Host "Restarting workflow for unlimited persistence..."
+          $headers = @{
+            "Accept"="application/vnd.github+json"
+            "Authorization"="Bearer $env:GH_PAT"
+          }
+          $body = '{"ref":"main"}'
+          Invoke-RestMethod -Method Post `
+            -Uri "https://api.github.com/repos/${{ github.repository }}/actions/workflows/RDP.yml/dispatches" `
+            -Headers $headers `
+            -Body $body
+
+          Write-Host "Workflow re-triggered. This VM will shut down and the next VM will start automatically."
+
