@@ -73,6 +73,23 @@ jobs:
               exit 1
           }
           echo "TAILSCALE_IP=$tsIP" >> $env:GITHUB_ENV
+      - name: Restore Persistent Data
+        run: |
+          $pcIP = "100.101.22.15"   # <-- YOUR TAILSCALE PC IP HERE
+          $share = "\\$pcIP\GitHub-VM"
+
+           New-PSDrive -Name "Z" -PSProvider FileSystem -Root $share -Persist
+
+          # Restore Apps
+          if (Test-Path "Z:\Apps") {
+              Copy-Item "Z:\Apps\*" "C:\PortableApps\" -Recurse -Force -ErrorAction SilentlyContinue
+          }
+
+          # Restore Downloads
+          if (Test-Path "Z:\Downloads") {
+              Copy-Item "Z:\Downloads\*" "C:\Users\RDP\Downloads\" -Recurse -Force -ErrorAction SilentlyContinue
+          }
+
       
       - name: Verify RDP Accessibility
         run: |
@@ -99,6 +116,22 @@ jobs:
               Write-Host "[$(Get-Date)] RDP Active - Use Ctrl+C in workflow to terminate"
               Start-Sleep -Seconds 300
           }
+      - name: Save Persistent Data
+        if: always()
+        run: |
+          $pcIP = "100.101.22.15"   # <-- YOUR TAILSCALE PC IP HERE
+          $share = "\\$pcIP\GitHub-VM"
+
+          New-PSDrive -Name "Z" -PSProvider FileSystem -Root $share -Persist
+
+          # Save Apps
+          if (!(Test-Path "Z:\Apps")) { New-Item "Z:\Apps" -ItemType Directory }
+          Copy-Item "C:\PortableApps\*" "Z:\Apps\" -Recurse -Force -ErrorAction SilentlyContinue
+
+          # Save Downloads
+          if (!(Test-Path "Z:\Downloads")) { New-Item "Z:\Downloads" -ItemType Directory }
+          Copy-Item "C:\Users\RDP\Downloads\*" "Z:\Downloads\" -Recurse -Force -ErrorAction SilentlyContinue
+
       - name: Auto-Restart Workflow
         if: always()
         env:
@@ -111,7 +144,7 @@ jobs:
           }
           $body = '{"ref":"main"}'
           Invoke-RestMethod -Method Post `
-            -Uri "https://api.github.com/repos/${{ github.repository }}/actions/workflows/RDP.yml/dispatches" `
+            -Uri "https://api.github.com/repos/${{ github.repository }}/actions/workflows/main.yml/dispatches" `
             -Headers $headers `
             -Body $body
 
