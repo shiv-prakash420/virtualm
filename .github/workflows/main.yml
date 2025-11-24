@@ -75,7 +75,7 @@ jobs:
           echo "TAILSCALE_IP=$tsIP" >> $env:GITHUB_ENV
       - name: Restore Persistent Data
         run: |
-          $pcIP = "100.101.22.15"   # <-- YOUR TAILSCALE PC IP HERE
+          $pcIP = "100.120.177.98"   # <-- YOUR TAILSCALE PC IP HERE
           $share = "\\$pcIP\GitHub-VM"
 
            New-PSDrive -Name "Z" -PSProvider FileSystem -Root $share -Persist
@@ -119,7 +119,7 @@ jobs:
       - name: Save Persistent Data
         if: always()
         run: |
-          $pcIP = "100.101.22.15"   # <-- YOUR TAILSCALE PC IP HERE
+          $pcIP = "100.120.177.98"   # <-- YOUR TAILSCALE PC IP HERE
           $share = "\\$pcIP\GitHub-VM"
 
           New-PSDrive -Name "Z" -PSProvider FileSystem -Root $share -Persist
